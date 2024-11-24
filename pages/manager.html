@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MDW Ad Manager</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link href="../styles/main.css" rel="stylesheet" />
+    <link href="../styles/components.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div class="app-wrapper">
+      <header class="app-header">
+        <div class="header-content">
+          <h1>MDW Ad Manager</h1>
+          <div class="header-actions">
+            <div class="theme-toggle" id="themeToggle">
+              <span class="theme-icon">🌙</span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <div class="container">
+          <div class="single-column-layout">
+            <!-- Account Selection Section -->
+            <section class="section account-section">
+              <div class="section-header">
+                <h2>Account Selection</h2>
+              </div>
+              <div class="section-body">
+                <div id="accountSelector"></div>
+              </div>
+            </section>
+
+            <!-- Developer Token Section -->
+            <section class="card token-section">
+              <div class="card-header">
+                <h2>Developer Token</h2>
+              </div>
+              <div class="card-body">
+                <div id="developerToken"></div>
+              </div>
+            </section>
+
+            <!-- Customer Management Section -->
+            <section class="card customer-section">
+              <div class="card-header">
+                <h2>Customer Management</h2>
+                <div class="card-actions">
+                  <button class="card-action-btn" id="refreshCustomers">
+                    <span class="icon">↻</span> Refresh
+                  </button>
+                  <button class="card-action-btn primary" id="addCustomer">
+                    <span class="icon">+</span> Add Customer
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div id="customerTable"></div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </main>
+
+      <footer class="app-footer">
+        <div class="container">
+          <p>© 2024 MDW Ad Manager</p>
+        </div>
+      </footer>
+    </div>
+    <!-- Notification Container -->
+    <div id="notificationContainer" class="notification-container"></div>
+
+    <script type="module" src="manager.js"></script>
+    <script src="../utils/api.js"></script>
+    <script src="../utils/storage.js"></script>
+    <script src="../utils/notifications.js"></script>
+    <script src="../components/AccountSelector.js"></script>
+    <script src="../components/CustomerTable.js"></script>
+    <script src="../components/DeveloperTokenInput.js"></script>
+    <script type="module" src="manager.js"></script>
+  </body>
+</html>

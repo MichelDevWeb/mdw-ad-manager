@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "MDW Ad Manager",
+  "version": "1.0",
+  "description": "Manage Google Ads accounts and customers",
+  "icons": {
+    "16": "assets/icons/icon-16.png",
+    "32": "assets/icons/icon-32.png",
+    "128": "assets/icons/icon-128.png"
+  },
+  "permissions": [
+    "identity",
+    "identity.email",
+    "storage",
+    "cookies",
+    "activeTab"
+  ],
+  "oauth2": {
+    "client_id": "1001639060778-nq36v89jgjls32mciontkvffab9pvcmq.apps.googleusercontent.com",
+    "scopes": [
+      "https://www.googleapis.com/auth/userinfo.email",
+      "https://www.googleapis.com/auth/userinfo.profile"
+    ]
+  },
+  "host_permissions": [
+    "https://www.googleapis.com/",
+    "https://accounts.google.com/*",
+    "https://googleads.googleapis.com/*"
+  ],
+  "action": {
+    "default_title": "MDW Ad Manager"
+  },
+  "background": {
+    "service_worker": "background/background.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "pages/manager.html"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAmwkc3RzzWZU5XmGucZ2JNm/IAfZn8BrDQtcH65FHJ08p4zamntWTIMU3oZXCXWCeewk1IPUG1Qx2iq9dlfrE1d3a+Uwmp44lhLr+PVjfINMYJckY34Mbr/gAxyqi3KAf81gjWQPe/M2NvwniAm+vJEyvTe6OV0tsFV02Q6q73A1YxBxpd/GHKODCT1SkXftOn6Yjh6lJSNC9xrpLDZCzgTL6W36g4HazAH+juTp1ULpwIx1xW+wlQnq8hs1XQKAPquVb73zWesMU7jm2AAABKiXviUdElRArbu9wx7vY9ZJDrfnR3eIuAzVrVmqpHylqOvHuoAECgkwgvPPaF4CpKQIDAQAB"
+}
