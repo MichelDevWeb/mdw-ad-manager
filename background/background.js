@@ -24,6 +24,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleAddGoogleAccount().then(sendResponse);
     return true;
   }
+  if (request.action === "getAccessToken") {
+    handleAccessTokenRequest(request.email, sendResponse);
+    return true;
+  }
   return false;
 });
 
@@ -150,4 +154,40 @@ async function handleAddGoogleAccount() {
       error: error.message,
     };
   }
+}
+
+// Separate function to handle the token request
+async function handleAccessTokenRequest(email, sendResponse) {
+  try {
+    const token = await getAccessToken(email);
+    sendResponse({ success: true, token });
+  } catch (error) {
+    sendResponse({ success: false, error: error.message });
+  }
+}
+
+// Get access token function
+async function getAccessToken(email) {
+  const { clientId, scopes } = getManifestData();
+
+  if (!clientId || !scopes) {
+    throw new Error("OAuth2 configuration missing in manifest");
+  }
+
+  return new Promise((resolve, reject) => {
+    chrome.identity.getAuthToken(
+      {
+        interactive: false,
+        account: email,
+        scopes,
+      },
+      (token) => {
+        if (chrome.runtime.lastError) {
+          reject(chrome.runtime.lastError);
+          return;
+        }
+        resolve(token);
+      }
+    );
+  });
 }

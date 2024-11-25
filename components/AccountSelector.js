@@ -12,9 +12,13 @@ class AccountSelector {
     this.error = null;
 
     if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", () => this.init());
+      document.addEventListener("DOMContentLoaded", () => {
+        this.init();
+        this.syncWithStorage();
+      });
     } else {
       this.init();
+      this.syncWithStorage();
     }
   }
 
@@ -58,41 +62,49 @@ class AccountSelector {
   }
 
   async loadGoogleAccounts() {
-    try {
-      const response = await new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage(
-          { action: "getGoogleAccount" },
-          (response) => {
-            if (chrome.runtime.lastError) {
-              reject(new Error(chrome.runtime.lastError.message));
-              return;
-            }
-            resolve(response);
-          }
-        );
-      });
+    const response = await chrome.runtime.sendMessage({
+      action: "getGoogleAccount",
+    });
 
-      if (!response.success) {
-        throw new Error(response.error || "Failed to get account info");
-      }
-
-      const accountInfo = response.account;
-      this.accounts = [
-        {
-          id: accountInfo.id,
-          email: accountInfo.email,
-          name: accountInfo.name || accountInfo.email.split("@")[0],
-          imageSrc:
-            accountInfo.picture ||
-            `https://www.google.com/s2/photos/profile/${accountInfo.email}`,
-        },
-      ];
-
-      return this.accounts;
-    } catch (error) {
-      console.error("Failed to load Google account:", error);
-      throw error;
+    if (!response.success) {
+      throw new Error(response.error || "Failed to get account info");
     }
+
+    // Load stored accounts first
+    const storedAccounts = (await StorageManager.get("googleAccounts")) || [];
+
+    const accountInfo = response.account;
+    const newAccount = {
+      id: accountInfo.id,
+      email: accountInfo.email,
+      name: accountInfo.name || accountInfo.email.split("@")[0],
+      imageSrc:
+        accountInfo.picture ||
+        `https://www.google.com/s2/photos/profile/${accountInfo.email}`,
+    };
+
+    // Merge current account with stored accounts, avoiding duplicates
+    this.accounts = storedAccounts.filter(
+      (acc) => acc.email !== accountInfo.email
+    );
+    this.accounts.push(newAccount);
+
+    // Save updated accounts list
+    await StorageManager.set("googleAccounts", this.accounts);
+
+    // Load last selected account
+    const lastSelected = await StorageManager.get("lastSelectedAccount");
+    if (lastSelected) {
+      this.selectedAccount = this.accounts.find(
+        (acc) => acc.email === lastSelected
+      );
+    } else {
+      // If no last selected, use current account
+      this.selectedAccount = newAccount;
+      await StorageManager.set("lastSelectedAccount", newAccount.email);
+    }
+
+    return this.accounts;
   }
 
   async refreshAccounts() {
@@ -236,24 +248,26 @@ class AccountSelector {
       }
 
       const accountInfo = response.account;
+      const newAccount = {
+        id: accountInfo.id,
+        email: accountInfo.email,
+        name: accountInfo.name || accountInfo.email.split("@")[0],
+        imageSrc:
+          accountInfo.picture ||
+          `https://www.google.com/s2/photos/profile/${accountInfo.email}`,
+      };
 
-      // Add the new account if it doesn't exist
+      // Check if account already exists
       const existingAccount = this.accounts.find(
         (acc) => acc.email === accountInfo.email
       );
-
       if (!existingAccount) {
-        const newAccount = {
-          id: accountInfo.id,
-          email: accountInfo.email,
-          name: accountInfo.name || accountInfo.email.split("@")[0],
-          imageSrc:
-            accountInfo.picture ||
-            `https://www.google.com/s2/photos/profile/${accountInfo.email}`,
-        };
-
         this.accounts.push(newAccount);
         this.selectedAccount = newAccount;
+
+        // Save to storage
+        await StorageManager.set("googleAccounts", this.accounts);
+        await StorageManager.set("lastSelectedAccount", newAccount.email);
 
         if (this.onSelect) {
           this.onSelect(newAccount);
@@ -264,6 +278,28 @@ class AccountSelector {
     } catch (error) {
       this.setError("Failed to add account");
       console.error("Add account error:", error);
+    }
+  }
+
+  // Optional: Add method to sync with storage
+  async syncWithStorage() {
+    try {
+      const storedAccounts = (await StorageManager.get("googleAccounts")) || [];
+      const lastSelected = await StorageManager.get("lastSelectedAccount");
+
+      if (storedAccounts.length > 0) {
+        this.accounts = storedAccounts;
+
+        if (lastSelected) {
+          this.selectedAccount = this.accounts.find(
+            (acc) => acc.email === lastSelected
+          );
+        }
+
+        this.render();
+      }
+    } catch (error) {
+      console.error("Failed to sync with storage:", error);
     }
   }
 }

@@ -19,7 +19,8 @@
     "client_id": "1001639060778-nq36v89jgjls32mciontkvffab9pvcmq.apps.googleusercontent.com",
     "scopes": [
       "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/userinfo.profile"
+      "https://www.googleapis.com/auth/userinfo.profile",
+      "https://www.googleapis.com/auth/adwords"
     ]
   },
   "host_permissions": [

@@ -4,6 +4,7 @@ class GoogleAdsManager {
     this.selectedAccount = null;
     this.developerToken = "";
     this.customers = [];
+    this.api = new GoogleAdsAPI(this.developerToken);
 
     this.initComponents();
     this.init();
@@ -117,37 +118,34 @@ class GoogleAdsManager {
 
     try {
       this.customerTable.setLoading(true);
-      const response = await fetch(
-        `https://googleads.googleapis.com/v14/customers:listAccessibleCustomers`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.developerToken}`,
-          },
-        }
-      );
 
-      if (response.ok) {
-        const data = await response.json();
-        this.customers = data.resourceNames.map(this.parseCustomerResource);
-        this.customerTable.setCustomers(this.customers);
-      } else {
-        throw new Error("Failed to fetch customers");
+      // Get access token from background script
+      const response = await chrome.runtime.sendMessage({
+        action: "getAccessToken",
+      });
+
+      if (!response.success) {
+        throw new Error(response.error || "Failed to get access token");
       }
+
+      // Update API with current developer token
+      this.api.setDeveloperToken(this.developerToken);
+
+      // Get customers list using the token
+      const result = await this.api.listAccessibleCustomers(response.token);
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      this.customers = result.customers;
+      this.customerTable.setCustomers(this.customers);
     } catch (error) {
       console.error("Error fetching customers:", error);
-      this.showError("Failed to fetch customers");
+      this.showError("Failed to fetch customers: " + error.message);
     } finally {
       this.customerTable.setLoading(false);
     }
-  }
-
-  parseCustomerResource(resourceName) {
-    const id = resourceName.split("/").pop();
-    return {
-      id,
-      name: `Customer ${id}`,
-      type: resourceName.includes("managers") ? "MCC" : "CUSTOMER",
-    };
   }
 
   setupEventListeners() {
